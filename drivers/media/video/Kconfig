@@ -975,6 +975,18 @@ config SOC_CAMERA_IMX074
 	help
 	  This driver supports IMX074 cameras from Sony
 
+config SOC_CAMERA_IMX219
+	tristate "imx219 camera support"
+	depends on SOC_CAMERA && I2C
+	help
+	  Sony IMX219 camera driver.
+          The IMX219 is a 8Mpix image sensor
+          with a small, restricted set of SOC
+          camera features such as black level
+          correction and defective pixel
+          canceling. The IMX219 only supports
+          raw Bayer output formats.
+
 config SOC_CAMERA_MT9M001
 	tristate "mt9m001 support"
 	depends on SOC_CAMERA && I2C
