@@ -192,6 +192,7 @@ static DEFINE_SPINLOCK(reg_spinlock);
 #define WCNSS_USR_HAS_CAL_DATA    (WCNSS_USR_CTRL_MSG_START + 2)
 
 #define MAC_ADDRESS_STR "%02x:%02x:%02x:%02x:%02x:%02x"
+
 /* message types */
 #define WCNSS_CTRL_MSG_START	0x01000000
 #define	WCNSS_VERSION_REQ             (WCNSS_CTRL_MSG_START + 0)
@@ -459,7 +460,6 @@ static ssize_t wcnss_wlan_macaddr_show(struct device *dev,
 
 static DEVICE_ATTR(wcnss_mac_addr, S_IRUSR | S_IWUSR,
 	wcnss_wlan_macaddr_show, wcnss_wlan_macaddr_store);
-
 
 static ssize_t wcnss_serial_number_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
@@ -1232,7 +1232,6 @@ EXPORT_SYMBOL(wcnss_get_serial_number);
 
 int wcnss_get_wlan_mac_address(char mac_addr[WLAN_MAC_ADDR_SIZE])
 {
-      return -1;
 	if (!penv)
 		return -ENODEV;
 
