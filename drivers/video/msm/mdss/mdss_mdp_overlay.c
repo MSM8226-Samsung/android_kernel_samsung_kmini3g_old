@@ -1142,10 +1142,12 @@ int mdss_mdp_overlay_kickoff(struct msm_fb_data_type *mfd,
 		ret = mdss_mdp_wb_kickoff(mfd);
 	else
 		ret = mdss_mdp_display_commit(mdp5_data->ctl, NULL);
+
 	if (!need_cleanup) {
 		atomic_set(&mfd->kickoff_pending, 0);
 		wake_up_all(&mfd->kickoff_wait_q);
 	}
+
 	mutex_unlock(&mfd->lock);
 
 	if (IS_ERR_VALUE(ret))
