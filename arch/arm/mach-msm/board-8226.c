@@ -27,6 +27,10 @@
 #include <linux/regulator/qpnp-regulator.h>
 #include <linux/msm_tsens.h>
 #include <linux/export.h>
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+#include <linux/persistent_ram.h>
+#include <linux/memblock.h>
+#endif
 #include <asm/mach/map.h>
 #include <asm/hardware/gic.h>
 #include <asm/mach/arch.h>
@@ -40,9 +44,6 @@
 #endif
 #ifdef CONFIG_SEC_DEBUG
 #include <mach/sec_debug.h>
-#endif
-#ifdef CONFIG_ANDROID_PERSISTENT_RAM
-#include <linux/persistent_ram.h>
 #endif
 #include <mach/msm_memtypes.h>
 #include <mach/socinfo.h>
@@ -115,23 +116,60 @@ static struct memtype_reserve msm8226_reserve_table[] __initdata = {
 	},
 };
 
-#ifdef CONFIG_ANDROID_PERSISTENT_RAM
-/* CONFIG_SEC_DEBUG reserving memory for persistent RAM*/
-#define RAMCONSOLE_PHYS_ADDR 0x1FB00000
-static struct persistent_ram_descriptor per_ram_descs[] __initdata = {
-       {
-               .name = "ram_console",
-               .size = SZ_1M,
-       }
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+static struct persistent_ram_descriptor desc = {
+        .name = "ram_console",
 };
 
-static struct persistent_ram per_ram __initdata = {
-       .descs = per_ram_descs,
-       .num_descs = ARRAY_SIZE(per_ram_descs),
-       .start = RAMCONSOLE_PHYS_ADDR,
-       .size = SZ_1M
+static struct persistent_ram ram = {
+        .descs = &desc,
+        .num_descs = 1,
 };
+
+void __init ram_console_debug_reserve(unsigned long ram_console_size)
+{
+        int ret;
+
+        ram.start = memblock_end_of_DRAM() - ram_console_size;
+        ram.size = ram_console_size;
+        ram.descs->size = ram_console_size;
+        INIT_LIST_HEAD(&ram.node);
+
+        ret = persistent_ram_early_init(&ram);
+        if (ret) {
+                pr_err("%s:ram console persistent_ram_early_init failed\n",__func__);
+                goto fail;
+        }
+
+        return;
+
+fail:
+        pr_err("Failed to reserve memory block for ram console\n");
+}
+
+static struct resource ram_console_resources[] = {
+        {
+                .flags = IORESOURCE_MEM,
+        },
+};
+
+static struct platform_device ram_console_device = {
+        .name           = "ram_console",
+        .id             = -1,
+        .num_resources  = ARRAY_SIZE(ram_console_resources),
+        .resource       = ram_console_resources,
+};
+
+void __init ram_console_debug_init(void)
+{
+        int err;
+        err = platform_device_register(&ram_console_device);
+        if (err)
+                pr_err("%s: ram console registration failed (%d)!\n",
+                        __func__, err);
+}
 #endif
+
 static int msm8226_paddr_to_memtype(unsigned int paddr)
 {
 	return MEMTYPE_EBI1;
@@ -171,8 +209,8 @@ static void __init msm8226_reserve(void)
 	reserve_info = &msm8226_reserve_info;
 	of_scan_flat_dt(dt_scan_for_memory_reserve, msm8226_reserve_table);
 	msm_reserve();
-#ifdef CONFIG_ANDROID_PERSISTENT_RAM
-	persistent_ram_early_init(&per_ram);
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+	ram_console_debug_reserve(SZ_1M *2);
 #endif
 }
 
@@ -205,6 +243,9 @@ void __init msm8226_add_drivers(void)
 #ifdef CONFIG_SEC_THERMISTOR
 	platform_device_register(&sec_device_thermistor);
 #endif
+#endif
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+	ram_console_debug_init();
 #endif
 	msm_thermal_device_init();
 }
