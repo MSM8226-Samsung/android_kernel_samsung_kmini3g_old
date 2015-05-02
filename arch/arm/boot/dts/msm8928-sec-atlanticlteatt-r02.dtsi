@@ -13,7 +13,7 @@
 /include/ "msm8226-camera-sensor-mtp-atlantic-rev01.dtsi"
 /include/ "dsi_panel_magna_octa_720p_video_kminilte_02.dtsi"
 
-/include/ "msm8928-w1.dtsi"
+/include/ "msm8928-kmini-w1.dtsi"
 &soc {
 	serial@f991f000 {
 		status = "ok";

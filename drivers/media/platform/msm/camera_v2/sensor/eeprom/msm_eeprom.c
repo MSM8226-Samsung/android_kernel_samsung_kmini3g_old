@@ -1263,7 +1263,7 @@ static int msm_eeprom_i2c_probe(struct i2c_client *client,
 	e_ctrl->msm_sd.sd.entity.type = MEDIA_ENT_T_V4L2_SUBDEV;
 	e_ctrl->msm_sd.sd.entity.group_id = MSM_CAMERA_SUBDEV_EEPROM;
 	msm_sd_register(&e_ctrl->msm_sd);
-	e_ctrl->is_supported = 1;
+	e_ctrl->is_supported = (e_ctrl->is_supported << 1) | 1;
 	CDBG("%s success result=%d X\n", __func__, rc);
 	return rc;
 power_down:

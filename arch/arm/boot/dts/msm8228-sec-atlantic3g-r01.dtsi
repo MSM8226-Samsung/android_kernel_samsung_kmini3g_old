@@ -12,7 +12,7 @@
 
 /include/ "msm8226-camera-sensor-mtp-atlantic3G-rev01.dtsi"
 /include/ "dsi_panel_magna_octa_720p_video_kmini3g_01.dtsi"
-/include/ "msm8928-w1.dtsi"
+/include/ "msm8928-kmini-w1.dtsi"
 /include/ "msm8228-sec-atlantic3g-battery-data.dtsi"
 
 &rpm_bus {
@@ -350,10 +350,29 @@
                 compatible = "qcom,msm-mem-hole";
                 qcom,memblock-remove = <0x08400000 0x2f00000 /* MODEM */
                                         0x0c300000 0x100000 /* MBA */
-                                        0x0cc00000 0x2a00000 /* Increase TZ apps region to 6MB (SR #0133393) */
+                                        0x0d200000 0x2400000 /* WCNSS, ADSP & Venus */
                                         0x0fa00000 0x500000 /* Address and Size of Hole */
-                                        0x10000000 0x600000>; /* Reserve 6MB for TIMA logging */
+                                        0x10000000 0x600000 /* Reserve 6MB for TIMA logging */
+                                        0x3f400000 0x800000>; /* Reserve 8MB for TZ apps */
         };
+
+	qcom,qseecom@d980000 {
+		compatible = "qcom,qseecom";
+		reg = <0x3f400000 0x800000>;
+		reg-names = "secapp-region";
+		qcom,disk-encrypt-pipe-pair = <2>;
+		qcom,hlos-ce-hw-instance = <0>;
+		qcom,qsee-ce-hw-instance = <0>;
+		qcom,msm-bus,name = "qseecom-noc";
+		qcom,msm-bus,num-cases = <4>;
+		/* qcom,msm-bus,active-only = <0>; */
+		qcom,msm-bus,num-paths = <1>;
+		qcom,msm-bus,vectors-KBps =
+				<55 512 0 0>,
+				<55 512 3936000 393600>,
+				<55 512 3936000 393600>,
+				<55 512 3936000 393600>;
+	};
 };
 
 &usb_otg {

@@ -1613,6 +1613,16 @@ static struct attribute_group sec_touch_factory_attr_group = {
 /************************************************************************
  * suspend/resume
  ************************************************************************/
+/************************************************************************
+ * This function called with startup() finished startup procedure
+ * and having exclusive_access
+ ************************************************************************/
+#define PARAM_ID_TOUCH_MODE_DEFAULT SCAN_TYPE_FINGER_AND_STYLUS
+#define STYLUS_ENABLE_DEFAULT 0
+#define PARAM_ID_VIEW_COVER_MODE_DEFAULT 0
+#define PARAM_ID_REPORT_RATE_DEFAULT 0
+#define PARAM_ID_SEPERATE_VELOCITY_MODE_DEFAULT 0
+
 int cyttsp5_samsung_factory_startup_attention(struct device *dev)
 {
 	struct cyttsp5_core_data *cd = dev_get_drvdata(dev);
@@ -1632,49 +1642,77 @@ int cyttsp5_samsung_factory_startup_attention(struct device *dev)
 	cyttsp5_mt_glove_enable(sfd->dev,
 		(sfd->touch_mode & SCAN_TYPE_GLOVE) ? 1 : 0);
 
+//-- stylus enable
+	if (sfd->stylus_enable == STYLUS_ENABLE_DEFAULT)
+		dev_dbg(sfd->dev,
+			"%s: stylus_enable %x is default value, bypass setting the mode\n",
+			__func__, sfd->stylus_enable);
+	else
+		cyttsp5_mt_stylus_enable(sfd->dev, sfd->stylus_enable);
+
 //-- touch mode
 	hover = (sfd->touch_mode & SCAN_TYPE_HOVER) ? 1 : 0;
 	glove = (sfd->touch_mode & SCAN_TYPE_GLOVE) ? 1 : 0;
 	if (sfd->stylus_enable)
 		glove = 1;
 	touch_mode = get_touch_mode_value(hover, glove);
-
-	rc = sfd->corecmd->cmd->set_param(sfd->dev, 0,
-		PARAM_ID_TOUCH_MODE, touch_mode);
-	if (rc) {
-		dev_info(sfd->dev, "%s: error on set touch mode rc=%d\n",
-			__func__, rc);
-		goto exit;
+	if (touch_mode == PARAM_ID_TOUCH_MODE_DEFAULT)
+		dev_dbg(sfd->dev,
+			"%s: touch mode %s is default value, bypass set param\n",
+			__func__, get_touch_mode_str(touch_mode));
+	else {
+		rc = sfd->corecmd->cmd->set_param(sfd->dev, 0,
+			PARAM_ID_TOUCH_MODE, touch_mode);
+		if (rc) {
+			dev_err(sfd->dev, "%s: error on set touch mode rc=%d\n",
+				__func__, rc);
+			goto exit;
+		}
+		dev_dbg(sfd->dev, "%s: touch_mode=%s\n", __func__,
+			get_touch_mode_str(touch_mode));
 	}
-	dev_dbg(sfd->dev, "%s: touch_mode=%s\n", __func__,
-		get_touch_mode_str(touch_mode));
 
 //-- view cover mode
-	rc = sfd->corecmd->cmd->set_param(sfd->dev, 0,
-		PARAM_ID_VIEW_COVER_MODE,
-		sfd->view_cover_closed);
-	if (rc) {
-		dev_info(sfd->dev,
-			"%s: error on set_param view cover mode\n", __func__);
-		goto exit;
+	if (sfd->view_cover_closed == PARAM_ID_VIEW_COVER_MODE_DEFAULT)
+		dev_dbg(sfd->dev,
+			"%s: view cover mode %x is default value, bypass set param\n",
+			__func__, sfd->view_cover_closed);
+	else {
+		rc = sfd->corecmd->cmd->set_param(sfd->dev, 0,
+			PARAM_ID_VIEW_COVER_MODE,
+			sfd->view_cover_closed);
+		if (rc) {
+			dev_err(sfd->dev,
+				"%s: error on set_param view cover mode\n", __func__);
+			goto exit;
+		}
+		dev_info(sfd->dev, "%s: view_cover_closed=%d\n",
+			__func__, sfd->view_cover_closed);
 	}
-	dev_dbg(sfd->dev, "%s: view_cover_closed=%d\n",
-		__func__, sfd->view_cover_closed);
 
 //-- report rate
-	rc = report_rate_set_param(sfd);
-	if (rc) {
-		dev_info(sfd->dev, "%s: error on set report rate rc=%d\n",
-			__func__, rc);
+	if (sfd->report_rate == PARAM_ID_REPORT_RATE_DEFAULT)
+		dev_dbg(sfd->dev,
+			"%s: report_rate %x is default value, bypass set param\n",
+			__func__, sfd->report_rate);
+	else {
+		rc = report_rate_set_param(sfd);
+		if (rc) {
+			dev_err(sfd->dev, "%s: error on set report rate rc=%d\n",
+				__func__, rc);
+		}
+		dev_info(sfd->dev, "%s: report rate=%d\n",
+			__func__, sfd->report_rate);
 	}
-	dev_info(sfd->dev, "%s: report rate=%d\n",
-		__func__, sfd->report_rate);
 
 exit:
 	sfd->suspended = 0;
 	return rc;
 
 }
+/************************************************************************
+ * This function is called with sleep() having exclusive access
+ ************************************************************************/
 int cyttsp5_samsung_factory_suspend_attention(struct device *dev)
 {
 	struct cyttsp5_core_data *cd = dev_get_drvdata(dev);
@@ -1767,7 +1805,7 @@ int cyttsp5_samsung_factory_probe(struct device *dev)
 		MKDEV(SEC_DEV_TOUCH_MAJOR, SEC_DEV_TSP_MINOR), sfd, "tsp");
 	if (IS_ERR(sfd->factory_dev)) {
 		dev_err(sfd->dev, "Failed to create device for the sysfs\n");
-		goto error_device_create;
+		goto error_device_create_factory_dev;
 	}
 	dev_dbg(dev, "%s sfd->factory_dev->devt=%d\n",
 		__func__, sfd->factory_dev->devt);
@@ -1786,19 +1824,23 @@ int cyttsp5_samsung_factory_probe(struct device *dev)
 	if (rc) {
 		dev_err(dev, "%s: get_param failed r=%d\n",
 			__func__, rc);
-		sfd->touch_mode = SCAN_TYPE_FINGER_AND_STYLUS;
+		sfd->touch_mode = PARAM_ID_TOUCH_MODE_DEFAULT;
 	}
 	dev_dbg(sfd->dev, "%s: touch_mode=%s\n", __func__,
 		get_touch_mode_str(sfd->touch_mode));
 
-	sfd->report_rate = 0;
+	sfd->stylus_enable = STYLUS_ENABLE_DEFAULT;
+	sfd->view_cover_closed = PARAM_ID_VIEW_COVER_MODE_DEFAULT;
+	sfd->report_rate = PARAM_ID_REPORT_RATE_DEFAULT;
+	sfd->is_inputmethod = PARAM_ID_SEPERATE_VELOCITY_MODE_DEFAULT;
+
 	sfd->probe_done = 1;
 	dev_dbg(sfd->dev, "%s: success. rc=%d\n", __func__, rc);
 	return 0;
 
 error_sysfs_create_group:
 	device_destroy(sec_class, sfd->factory_dev->devt);
-error_device_create:
+error_device_create_factory_dev:
 	kfree(sfd->mutual_idac.buf);
 error_alloc_idac_buf:
 	kfree(sfd->diff.buf);

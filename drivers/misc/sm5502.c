@@ -1520,10 +1520,11 @@ static irqreturn_t sm5502_irq_thread(int irq, void *data)
 		sec_otg_notify(HNOTIFY_OTG_POWER_ON);
 #endif
 		if(sec_get_notification(HNOTIFY_MODE) != NOTIFY_TEST_MODE){
-
-			if(adc == ADC_JIG_UART_OFF)	/*JIG UART OFF VBUS Change*/
+			/*JIG UART OFF VBUS Change or Sosche Charger*/
+			if((adc == ADC_JIG_UART_OFF) || (adc == ADC_OPEN))
 				sm5502_attach_dev(usbsw);
-			else if(adc == ADC_DESKDOCK)	/*DESKDOCK VBUS Change*/
+			/*Deskdock VBUS Change scenario*/
+			else if(adc == ADC_DESKDOCK)
 				usbsw->pdata->callback(CABLE_TYPE_DESK_DOCK,SM5502_ATTACHED);
 		}
 	}
@@ -1533,10 +1534,11 @@ static irqreturn_t sm5502_irq_thread(int irq, void *data)
                 sec_otg_notify(HNOTIFY_OTG_POWER_OFF);
 #endif
 		if(sec_get_notification(HNOTIFY_MODE) != NOTIFY_TEST_MODE){
-
-			if(adc == ADC_JIG_UART_OFF)	/*JIG UART OFF VBUS Change*/
+			/*JIG UART OFF VBUS Change or Sosche Charger*/
+			if((adc == ADC_JIG_UART_OFF) || (adc == ADC_OPEN))
 				sm5502_detach_dev(usbsw);
-			else if(adc == ADC_DESKDOCK)	/*DESKDOCK VBUS Change*/
+			/*Deskdock VBUS Change scenario*/
+			else if(adc == ADC_DESKDOCK)
 				usbsw->pdata->callback(CABLE_TYPE_DESK_DOCK_NO_VB,SM5502_DETACHED);
 		}
 	}

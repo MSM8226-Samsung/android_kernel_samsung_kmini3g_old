@@ -3841,7 +3841,7 @@ char LOCAL_CE_2[] = {
 	0x0b, //curve22_a
 	0xaf, //curve23_b
 	0x0a, //curve23_a
-	0x00, //curve24_b
+	0x0b, //curve24_b
 	0xFF, //curve24_a
 	0x01, //cs gain
 	0x20,

@@ -183,8 +183,8 @@ static ssize_t back_camera_firmware_show(struct device *dev,
 #elif defined(CONFIG_MACH_VIENNAEUR) || defined(CONFIG_MACH_VASTALTE_CHN_CTC) || defined (CONFIG_MACH_VICTOR3GDSDTV_LTN)
 	char cam_fw[] = "E08QSGG01OC E08QSGG01OC\n";/* Gumi, 8mega_pixel, Qualcomm_isp, Sony_sensor*/
 	return snprintf(buf, sizeof(cam_fw), "%s", cam_fw);
-#elif defined(CONFIG_SEC_ATLANTIC_PROJECT)
-	char cam_fw[] = "F08QUHG02SM F08QUHG02SM\n";/* Samsung Electro, 8mega_pixel, Qualcomm_isp, Sony_sensor IMX219*/
+#elif defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined(CONFIG_MACH_MEGA2LTE_KTT) || defined(CONFIG_SEC_HESTIA_PROJECT)
+	char cam_fw[] = "F08QUHI01SM F08QUHI01SM\n";/* Samsung Electro, 8mega_pixel, Qualcomm_isp, Sony_sensor IMX219*/
 	return snprintf(buf, sizeof(cam_fw), "%s", cam_fw);
 #elif defined(CONFIG_MACH_LT03EUR)
 	char cam_fw[] = "E08QSGG01OE E08QSGG01OE\n";
@@ -279,9 +279,10 @@ static ssize_t back_camera_firmware_load_store(struct device *dev,
 char cam_fw_full_ver[40] = "F08QUHE03SM F08QUHE03SM F08QUHE03SM\n";//multi module
 #else
 char cam_fw_full_ver[40] = {0};//multi module
-#if defined(CONFIG_SEC_ATLANTIC_PROJECT) /* Samsung Electro, 8mega_pixel, Qualcomm_isp, Sony_sensor IMX219*/
-char load_fw[] = "F08QUHG02SM";
-char phone_fw[] = "F08QUHG02SM";
+#if defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined(CONFIG_MACH_MEGA2LTE_KTT)|| defined(CONFIG_SEC_HESTIA_PROJECT)
+/* Samsung Electro, 8mega_pixel, Qualcomm_isp, Sony_sensor IMX219*/
+char load_fw[] = "F08QUHI01SM";
+char phone_fw[] = "F08QUHI01SM";
 #else
 char load_fw[] = "F08QUHE03SM";
 char phone_fw[] = "F08QUHE03SM";
