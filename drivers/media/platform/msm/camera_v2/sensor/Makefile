@@ -6,6 +6,7 @@ ccflags-y += -Idrivers/media/platform/msm/camera_v2/sensor/cci
 obj-$(CONFIG_MSMB_CAMERA) += cci/ io/ csiphy/ csid/ actuator/ eeprom/
 obj-$(CONFIG_MSM_CAMERA_SENSOR) += msm_sensor_init.o msm_sensor_driver.o msm_sensor.o
 obj-$(CONFIG_S5K4ECGX) += s5k4ecgx_yuv.o
+obj-$(CONFIG_IMX219) += imx219.o
 obj-$(CONFIG_SR030PC50) += sr030pc50_yuv.o
 obj-$(CONFIG_SR352) += sr352_yuv.o
 obj-$(CONFIG_SR200PC20) += sr200pc20_yuv.o

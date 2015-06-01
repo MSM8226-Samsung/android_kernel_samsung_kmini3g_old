@@ -3470,11 +3470,17 @@ static struct clk_lookup msm_clocks_8226[] = {
 	CLK_LOOKUP("cam_src_clk", mclk0_clk_src.c, "21.qcom,camera"),
 	CLK_LOOKUP("cam_src_clk", mclk0_clk_src.c, "22.qcom,camera"),
 	CLK_LOOKUP("cam_src_clk", mclk0_clk_src.c, "0.qcom,camera"),
+#ifdef CONFIG_IMX219
+	CLK_LOOKUP("cam_src_clk", mclk0_clk_src.c, "20.qcom,camera"),
+#endif
 #if	defined(CONFIG_SEC_MATISSE_PROJECT) || defined (CONFIG_SEC_BERLUTI_PROJECT) || defined (CONFIG_SEC_ATLANTIC_PROJECT) ||\
 	defined (CONFIG_SEC_MEGA2_PROJECT) || defined(CONFIG_SEC_VASTA_PROJECT)
 	CLK_LOOKUP("cam_src_clk", mclk1_clk_src.c, "2.qcom,camera"),
 #else
 	CLK_LOOKUP("cam_src_clk", mclk0_clk_src.c, "2.qcom,camera"),
+#endif
+#ifdef CONFIG_IMX219
+	CLK_LOOKUP("cam_clk", camss_mclk0_clk.c, "20.qcom,camera"),
 #endif
 	CLK_LOOKUP("cam_clk", camss_mclk0_clk.c, "spi0.0"),
 	CLK_LOOKUP("cam_clk", camss_mclk0_clk.c, "5a.qcom,camera"),

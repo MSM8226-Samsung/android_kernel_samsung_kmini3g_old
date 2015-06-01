@@ -99,6 +99,14 @@ config S5K4E5YA
 		2 mipi lanes, preview config = 1280 * 980 at 30 fps,
 		snapshot config = 2608 * 1960 at 30 fps.
 
+config IMX219
+	bool "Sensor imx219 (Sony 8MP)"
+	depends on MSMB_CAMERA
+	---help---
+		Support for IMX219 sensor driver.
+		This is a Sony 8MP Bayer Sensor with autofocus.
+		Say Y if the platform uses IMX219 sensor.
+
 config S5K4H5YB
 	bool "Sensor S5K4H5YB (BAYER 8M)"
 	depends on MSMB_CAMERA
